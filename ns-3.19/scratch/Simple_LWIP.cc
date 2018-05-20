@@ -64,22 +64,20 @@ NS_LOG_COMPONENT_DEFINE ("EpcFirstExample");
 int
 main (int argc, char *argv[])
 {
-	int aggregation_mode=3;
+	int aggregation_mode=1;
 	/*		Mode 	LTE UL 		LTE DL 		Wi-Fi UL		Wi-Fi DL		Split 
 	 * 		1		True		True		False			False			Flow
 	 * 		2		False		False		True			True			Flow
 	 * 		3		True		True		False			True			Packet
 	 * 		4		True		True		True			True			Flow
-	 * /
-	
-	
+	 * */
 	uint16_t numberOfNodes = 1;
 	uint16_t numberOfClients=1;//Users
 	double simTime = 10;
 	double distance = 10;
 	long xvalue=0;
 	long yvalue=0;
-	double interPacketInterval =481;//1024==8 mbps
+	double interPacketInterval =8192;//1024==8 mbps
 	//2048 = 4 Mbps
 	//4096 = 2 Mbps
 	//8192==1 mbps
@@ -92,7 +90,7 @@ main (int argc, char *argv[])
 	cmd.AddValue("interPacketInterval", "Inter packet interval [ms])", interPacketInterval);
 	cmd.AddValue("xvalue", "X co-ordinate postion", xvalue);
 	cmd.AddValue("yvalue", "Y co-ordinate postion", yvalue);
-	cmd.AddValue("aggregation_mode", "1- only lte, 2- only wifi, 3- Lte+wifi, 4- LTE UL and Wi-Fi DL", lte);
+	cmd.AddValue("aggregation_mode", "1- only lte, 2- only wifi, 3- Lte+wifi, 4- LTE UL and Wi-Fi DL", aggregation_mode);
 	cmd.Parse(argc, argv);
 	Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
 	Ptr<PointToPointEpcHelper>  epcHelper = CreateObject<PointToPointEpcHelper> ();
@@ -409,7 +407,7 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
 
 	//UDP Application======================================
 	//uint16_t port=2000;
-	/*	uint16_t port1=1001;
+		uint16_t port=1005;
 	for (uint32_t u = 0; u < numberOfClients; ++u)
 	{
 		UdpClientHelper source (remoteHostAddr, port);
@@ -425,7 +423,7 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
 		sinkApps.Start (Seconds (1.0));
 		sinkApps.Stop (Seconds (10.0));
 		port++;
-
+/*
 			UdpClientHelper source01 (remoteHostAddr, port);
 		// Set the amount of data to send in bytes.  Zero is unlimited.
 		source01.SetAttribute ("Interval", TimeValue (MicroSeconds(interPacketInterval)));
@@ -472,7 +470,8 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
 		sinkApps11.Stop (Seconds (10.0));
 		port1++;
 		//-----------------------------try
-	}*/
+		* */
+	}
 
 
 	//=======================================================================================

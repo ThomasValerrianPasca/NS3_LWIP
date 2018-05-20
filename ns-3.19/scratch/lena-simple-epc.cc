@@ -70,7 +70,7 @@ main (int argc, char *argv[])
 	 * 		2		False		False		True			True			Flow
 	 * 		3		True		True		True			False			Packet
 	 * 		4		True		True		True			True			Flow
-	 * /
+	 * */
 	
 	
 	uint16_t numberOfNodes = 1;
@@ -92,7 +92,7 @@ main (int argc, char *argv[])
 	cmd.AddValue("interPacketInterval", "Inter packet interval [ms])", interPacketInterval);
 	cmd.AddValue("xvalue", "X co-ordinate postion", xvalue);
 	cmd.AddValue("yvalue", "Y co-ordinate postion", yvalue);
-	cmd.AddValue("aggregation_mode", "1- only lte, 2- only wifi, 3- Lte+wifi, 4- LTE UL and Wi-Fi DL", lte);
+	cmd.AddValue("aggregation_mode", "1- only lte, 2- only wifi, 3- Lte+wifi, 4- LTE UL and Wi-Fi DL", aggregation_mode);
 	cmd.Parse(argc, argv);
 	Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
 	Ptr<PointToPointEpcHelper>  epcHelper = CreateObject<PointToPointEpcHelper> ();
