@@ -1,0 +1,4 @@
+./log_lte_1_ue_96_position.log: Total Rx Bytes: 3.00944e+08 Total Throughput: 23.1922
+./log_lte_1_ue_48_position.log: Total Rx Bytes: 3.00944e+08 Total Throughput: 23.1923
+./log_lte_1_ue_24_position.log: Total Rx Bytes: 3.00944e+08 Total Throughput: 23.1921
+./log_wifi_1_ue_4_position.log: Total Rx Bytes: 5.08495e+07 Total Throughput: 3.91892

@@ -1,0 +1,4 @@
+./log_wifi_4_ue_96_position.log: Total Rx Bytes: 6.91448e+07 Total Throughput: 5.34297
+./log_wifi_4_ue_4_position.log: Total Rx Bytes: 7.0667e+07 Total Throughput: 5.51531
+./log_wifi_4_ue_24_position.log: Total Rx Bytes: 7.05008e+07 Total Throughput: 5.44078
+./log_wifi_4_ue_48_position.log: Total Rx Bytes: 7.04819e+07 Total Throughput: 5.43649

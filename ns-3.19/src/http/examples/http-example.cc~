@@ -1,0 +1,115 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/applications-module.h"
+#include "ns3/config-store-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/ipv4-list-routing-helper.h"
+#include "ns3/point-to-point-module.h"
+
+#include "ns3/http-module.h"
+
+NS_LOG_COMPONENT_DEFINE ("HttpTest");
+using namespace ns3;
+
+
+int 
+main (int argc, char *argv[])
+{
+  // Users may find it convenient to turn on explicit debugging
+  // for selected modules; the below lines suggest how to do this
+  //
+#if 0
+  LogComponentEnable ("HttpClient", LOG_LEVEL_ALL);
+  LogComponentEnable ("HttpServer", LOG_LEVEL_ALL);
+  LogComponentEnable ("HttpDistribution", LOG_LEVEL_ALL);
+  LogComponentEnable ("HttpController", LOG_LEVEL_ALL);
+#endif
+
+  LogComponentEnable ("HttpTest", LOG_LEVEL_ALL);
+
+  uint32_t totalTime = 1000;
+  uint32_t dataStart = 30;
+  uint32_t nNodes = 2;
+  std::string delay = "2ms";
+  std::string dataRate = "1Mbps";
+
+  // Allow users to override the default parameters and set it to new ones from CommandLine.
+  CommandLine cmd;
+  /*
+   * The parameter for the p2p link
+   */
+  cmd.AddValue ("DataRate", "The data rate for the link", dataRate);
+  cmd.AddValue ("Delay", "The delay for the link", delay);
+  cmd.Parse (argc, argv);
+
+  SeedManager::SetSeed (99);
+  SeedManager::SetRun (1);
+
+  NS_LOG_INFO ("Create nodes.");
+  NodeContainer nodes;
+  nodes.Create (nNodes);
+  NetDeviceContainer devices;
+
+  NS_LOG_INFO ("Create channels.");
+
+  PointToPointHelper p2p;
+  p2p.SetDeviceAttribute ("DataRate", StringValue (dataRate));
+  p2p.SetChannelAttribute ("Delay", StringValue (delay));
+  devices = p2p.Install (nodes);
+
+  bool verbose = true;
+
+  cmd.AddValue ("verbose", "Tell application to log if true", verbose);
+
+  cmd.Parse (argc,argv);
+  InternetStackHelper internet;
+  internet.Install (nodes);
+
+  NS_LOG_INFO ("Setting the address");
+  Ipv4AddressHelper address;
+  address.SetBase ("10.1.1.0", "255.255.255.0");
+  Ipv4InterfaceContainer interfaces;
+  interfaces = address.Assign (devices);
+
+  double randomStartTime = (1.0 / 4) / (nNodes);
+   double randomStartTime = (1.0 / 4) / (nNodes);
+
+  uint16_t port = 80;
+  uint32_t count = 0;
+
+  HttpHelper httpHelper;
+
+  for (uint32_t i = 0; i < (nNodes - 1); ++i)
+    {
+      HttpServerHelper httpServer;
+      NS_LOG_LOGIC ("Install app in server");
+      httpServer.SetAttribute ("Local", AddressValue (InetSocketAddress (Ipv4Address::GetAny (), port)));
+      httpServer.SetAttribute ("HttpController", PointerValue (httpHelper.GetController ()));
+      ApplicationContainer serverApps = httpServer.Install (nodes.Get (i));
+
+      serverApps.Start (Seconds (0.0));
+      serverApps.Stop (Seconds (totalTime));
+
+      HttpClientHelper httpClient;
+      httpClient.SetAttribute ("Peer", AddressValue (InetSocketAddress (interfaces.GetAddress (i), port)));
+      httpClient.SetAttribute ("HttpController", PointerValue (httpHelper.GetController ()));
+      ApplicationContainer clientApps = httpClient.Install (nodes.Get (nNodes - 1));
+
+      UniformVariable var;
+      clientApps.Start (Seconds (dataStart + (count * randomStartTime)));
+      clientApps.Stop (Seconds (totalTime));
+    }
+
+  NS_LOG_INFO ("Run Simulation.");
+  Simulator::Stop (Seconds (totalTime));
+
+  /* ... */
+
+  Simulator::Run ();
+  Simulator::Destroy ();
+  return 0;
+}
+
+

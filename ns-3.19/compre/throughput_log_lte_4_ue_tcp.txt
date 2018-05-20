@@ -1,0 +1,1 @@
+./log_lte_1_ue_tcp.log: Total Rx Bytes: 2.15917e+08 Total Throughput: 16.6412

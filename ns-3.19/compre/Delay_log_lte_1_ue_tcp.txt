@@ -1,0 +1,1 @@
+./log_lte_4_ue_tcp.log:  Delay = 0.0174126

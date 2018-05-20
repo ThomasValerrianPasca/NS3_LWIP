@@ -1,0 +1,1 @@
+./log_lte_wifi_1_ue_tcp.log:  Delay = 0.368459

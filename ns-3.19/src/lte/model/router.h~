@@ -1,0 +1,8 @@
+namespace ns3 {
+class router {
+	router();
+	~router();
+
+}
+
+}

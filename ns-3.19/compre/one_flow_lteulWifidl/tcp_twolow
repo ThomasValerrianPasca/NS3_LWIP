@@ -1,0 +1,152 @@
+case1
+Flow 1 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1652048
+  Rx Bytes:   1633040
+  Transmitted Packets: 2870
+  Received Packets: 2837
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999929604.0ns
+  Throughput: 1.38436Mbps
+Flow 2 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1692368
+  Rx Bytes:   1673360
+  Transmitted Packets: 2940
+  Received Packets: 2907
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9986929604.0ns
+  Throughput: 1.42059Mbps
+Flow 3 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   62960
+  Rx Bytes:   62760
+  Transmitted Packets: 1574
+  Received Packets: 1569
+  First Tx time:   +1021928638.0ns
+  Last Rx time:   +9977961211.0ns
+  Throughput: 0.0534635Mbps
+Flow 4 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   61720
+  Rx Bytes:   61720
+  Transmitted Packets: 1543
+  Received Packets: 1543
+  First Tx time:   +1021928703.0ns
+  Last Rx time:   +9996961705.0ns
+  Throughput: 0.0524662Mbps
+  Packet loss = 71
+Percentage of Lost packets = 0.79534
+  Delay = 0.017721
+ Total Rx Bytes: 3.43088e+06 Total Throughput: 2.91087
+
+case2
+Flow 1 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1194704
+  Rx Bytes:   1150928
+  Transmitted Packets: 2076
+  Received Packets: 2000
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9971930592.0ns
+  Throughput: 0.978706Mbps
+Flow 2 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1099088
+  Rx Bytes:   1066256
+  Transmitted Packets: 1910
+  Received Packets: 1853
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9980930098.0ns
+  Throughput: 0.905796Mbps
+Flow 3 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   52600
+  Rx Bytes:   52600
+  Transmitted Packets: 1315
+  Received Packets: 1315
+  First Tx time:   +1021928638.0ns
+  Last Rx time:   +9984999999.0ns
+  Throughput: 0.0447733Mbps
+Flow 4 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   40240
+  Rx Bytes:   40240
+  Transmitted Packets: 1006
+  Received Packets: 1006
+  First Tx time:   +1021928703.0ns
+  Last Rx time:   +9993999999.0ns
+  Throughput: 0.0342181Mbps
+  Packet loss = 133
+Percentage of Lost packets = 2.10877
+  Delay = 0.0184883
+ Total Rx Bytes: 2.31002e+06 Total Throughput: 1.96349
+
+
+case3
+Flow 1 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   2414672
+  Rx Bytes:   2396816
+  Transmitted Packets: 4194
+  Received Packets: 4163
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999999999.0ns
+  Throughput: 2.03181Mbps
+Flow 2 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   1991312
+  Rx Bytes:   1971152
+  Transmitted Packets: 3459
+  Received Packets: 3424
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9986999999.0ns
+  Throughput: 1.67338Mbps
+Flow 3 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   90960
+  Rx Bytes:   90720
+  Transmitted Packets: 2274
+  Received Packets: 2268
+  First Tx time:   +1013999999.0ns
+  Last Rx time:   +9986928638.0ns
+  Throughput: 0.0771363Mbps
+Flow 4 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   74040
+  Rx Bytes:   74000
+  Transmitted Packets: 1851
+  Received Packets: 1850
+  First Tx time:   +1013999999.0ns
+  Last Rx time:   +9998928638.0ns
+  Throughput: 0.0628358Mbps
+  Packet loss = 73
+Percentage of Lost packets = 0.6198
+  Delay = 0.0205076
+ Total Rx Bytes: 4.53269e+06 Total Throughput: 3.84516
+
+case4
+Flow 1 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   9213200
+  Rx Bytes:   9155600
+  Transmitted Packets: 15997
+  Received Packets: 15897
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9990443893.0ns
+  Throughput: 7.76955Mbps
+Flow 2 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   9155600
+  Rx Bytes:   9104336
+  Transmitted Packets: 15897
+  Received Packets: 15808
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999818071.0ns
+  Throughput: 7.718Mbps
+Flow 3 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   317960
+  Rx Bytes:   317520
+  Transmitted Packets: 7949
+  Received Packets: 7938
+  First Tx time:   +1010128101.0ns
+  Last Rx time:   +9999928638.0ns
+  Throughput: 0.26947Mbps
+Flow 4 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   316160
+  Rx Bytes:   315520
+  Transmitted Packets: 7904
+  Received Packets: 7888
+  First Tx time:   +1010350167.0ns
+  Last Rx time:   +9971928703.0ns
+  Throughput: 0.268616Mbps
+  Packet loss = 216
+Percentage of Lost packets = 0.452384
+  Delay = 0.039058
+ Total Rx Bytes: 1.8893e+07 Total Throughput: 16.0256

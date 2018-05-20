@@ -1,0 +1,1 @@
+./log_wifi_4_ue_tcp.log: Total Rx Bytes: 1.66152e+08 Total Throughput: 12.8106

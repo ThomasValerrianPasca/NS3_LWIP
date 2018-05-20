@@ -1,0 +1,4 @@
+./log_lte_ul_wifi_dl_1_ue_4_position.log:Percentage of Lost packets = 0.0124121
+./log_lte_ul_wifi_dl_1_ue_48_position.log:Percentage of Lost packets = 0.76208
+./log_lte_ul_wifi_dl_1_ue_24_position.log:Percentage of Lost packets = 0.0144772
+./log_lte_ul_wifi_dl_1_ue_96_position.log:Percentage of Lost packets = 38.3536

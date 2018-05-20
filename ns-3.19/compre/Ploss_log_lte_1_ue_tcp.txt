@@ -1,0 +1,1 @@
+./log_lte_4_ue_tcp.log:Percentage of Lost packets = 1.54033

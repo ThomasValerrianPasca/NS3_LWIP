@@ -1,0 +1,4 @@
+./log_lte_4_ue_96_position.log:  Delay = 0.0320491
+./log_lte_4_ue_24_position.log:  Delay = 0.0161463
+./log_lte_4_ue_4_position.log:  Delay = 0.0171677
+./log_lte_4_ue_48_position.log:  Delay = 0.0315155

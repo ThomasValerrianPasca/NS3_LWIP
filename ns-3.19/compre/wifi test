@@ -1,0 +1,6 @@
+1 user -  Total Rx Bytes: 1.84731e+07 Total Throughput: 15.661 - 16 Mbps ===  Total Rx Bytes: 2.70027e+07 Total Throughput: 22.8921
+ 2 user- Total Rx Bytes: 1.83427e+07 Total Throughput: 15.5572	- 32 Mbps
+3 user - Total Rx Bytes: 8.12144e+06 Total Throughput: 7.11812  - 64
+ 4 user -  Total Rx Bytes: 6.1279e+06 Total Throughput: 5.62271  - 128
+ 5 user -  Total Rx Bytes: 5.67764e+06 Total Throughput: 5.11028  - higher	
+ 10 user - Total Rx Bytes: 4.76556e+06 Total Throughput: 4.12359  - higher

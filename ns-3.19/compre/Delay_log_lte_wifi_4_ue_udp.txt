@@ -1,0 +1,4 @@
+./log_lte_wifi_4_ue_48_position.log:  Delay = 0.443979
+./log_lte_wifi_4_ue_96_position.log:  Delay = 0.437364
+./log_lte_wifi_4_ue_24_position.log:  Delay = 0.755633
+./log_lte_wifi_4_ue_4_position.log:  Delay = 0.167835

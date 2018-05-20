@@ -1,0 +1,1 @@
+./log_wifi_4_ue_tcp.log:Percentage of Lost packets = 0.0772073

@@ -1,0 +1,4 @@
+./log_wifi_4_ue_96_position.log:  Delay = 2.98268
+./log_wifi_4_ue_4_position.log:  Delay = 2.85887
+./log_wifi_4_ue_24_position.log:  Delay = 2.90367
+./log_wifi_4_ue_48_position.log:  Delay = 2.91817

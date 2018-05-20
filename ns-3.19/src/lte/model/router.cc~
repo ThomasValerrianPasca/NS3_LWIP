@@ -1,0 +1,14 @@
+#include "ns3/log.h"
+#include "ns3/router.h"
+NS_LOG_COMPONENT_DEFINE ("Router");
+namespace ns3 {
+router::~router ()
+{
+  NS_LOG_FUNCTION (this);
+}
+
+router::router ()
+{
+  NS_LOG_FUNCTION (this);
+}
+}

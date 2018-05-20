@@ -1,0 +1,1 @@
+./log_lte_ul_wifi_dl_1_ue_tcp.log:Percentage of Lost packets = 0.0569862

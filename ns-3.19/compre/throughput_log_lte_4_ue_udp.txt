@@ -1,0 +1,4 @@
+./log_lte_4_ue_96_position.log: Total Rx Bytes: 4.32197e+08 Total Throughput: 33.3075
+./log_lte_4_ue_24_position.log: Total Rx Bytes: 4.06775e+08 Total Throughput: 31.3483
+./log_lte_4_ue_4_position.log: Total Rx Bytes: 2.03394e+08 Total Throughput: 15.6747
+./log_lte_4_ue_48_position.log: Total Rx Bytes: 4.32197e+08 Total Throughput: 33.3075

@@ -1,0 +1,700 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2011 Yufei Cheng
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Yufei Cheng   <yfcheng@ittc.ku.edu>
+ *
+ * James P.G. Sterbenz <jpgs@ittc.ku.edu>, director
+ * ResiliNets Research Group  http://wiki.ittc.ku.edu/resilinets
+ * Information and Telecommunication Technology Center (ITTC)
+ * and Department of Electrical Engineering and Computer Science
+ * The University of Kansas Lawrence, KS USA.
+ *
+ * Work supported in part by NSF FIND (Future Internet Design) Program
+ * under grant CNS-0626918 (Postmodern Internet Architecture),
+ * NSF grant CNS-1050226 (Multilayer Network Resilience Analysis and Experimentation on GENI),
+ * US Department of Defense (DoD), and ITTC at The University of Kansas.
+ */
+
+#include <algorithm>
+#include <list>
+#include <ctime>
+
+#include "ns3/simulator.h"
+#include "ns3/packet.h"
+#include "ns3/log.h"
+#include "ns3/socket.h"
+#include "ns3/assert.h"
+#include "ns3/uinteger.h"
+#include "ns3/object-vector.h"
+#include "ns3/trace-source-accessor.h"
+#include "ns3/random-variable.h"
+
+#include "http-runtime-variable.h"
+#include "http-seq-header.h"
+
+NS_LOG_COMPONENT_DEFINE ("HttpRuntimeVariable");
+
+namespace ns3 {
+namespace http {
+/*
+ * The Runtime Variable to save HTTP parameter on the run
+*/
+NS_OBJECT_ENSURE_REGISTERED (RuntimeVariable);
+
+TypeId RuntimeVariable::GetTypeId ()
+{
+  static TypeId tid = TypeId ("ns3::http::RuntimeVariable")
+    .SetParent<Object> ()
+    .AddConstructor<RuntimeVariable> ()
+  ;
+  return tid;
+}
+
+RuntimeVariable::~RuntimeVariable ()
+{
+  NS_LOG_FUNCTION_NOARGS ();
+}
+
+void
+RuntimeVariable::SetPageTimeout (uint32_t pageTimeout)
+{
+  m_pageTimeout = pageTimeout;
+}
+
+uint32_t
+RuntimeVariable::GetPageTimeout ()
+{
+  return m_pageTimeout;
+}
+
+void
+RuntimeVariable::SetPersistent (bool per)
+{
+  m_persistent = per;
+}
+
+uint32_t
+RuntimeVariable::GetVectorSize ()
+{
+  return m_httpRuntime.size ();
+}
+
+void
+RuntimeVariable::SetCurrentSession (std::vector<Ipv4Address> id)
+{
+  uint32_t currentSession = m_stopSession[id];
+  m_stopSession[id] = currentSession + 1;
+}
+
+uint32_t
+RuntimeVariable::GetCurrentSession (std::vector<Ipv4Address> id)
+{
+  if (m_stopSession.find (id) == m_stopSession.end ())
+    {
+      m_stopSession[id] = 0;
+    }
+  return m_stopSession[id];
+}
+
+bool
+RuntimeVariable::SetEntryRequested (std::vector<Ipv4Address> id, uint16_t session, uint8_t page, uint8_t object)
+{
+  /*
+   * Loop all the socket entries to check the unresponsed
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  httpRuntime runtimeVariable = i->second;
+
+  for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVariable.begin (); j
+       != runtimeVariable.end (); ++j)
+    {
+      if ((j->m_session == session) && (j->m_page == page) && (j->m_object == object))
+        {
+          j->SetRequested (true);
+          return true;
+        }
+    }
+  NS_LOG_DEBUG ("The entry is not found");
+  return false;
+}
+
+bool
+RuntimeVariable::CheckRuntimeVariable (std::vector<Ipv4Address> id, uint16_t session, uint8_t page, uint8_t object, uint32_t totalSize, uint32_t packetSize)
+{
+  NS_LOG_FUNCTION (this << (uint32_t)session << (uint32_t)page << (uint32_t)object << (uint32_t)packetSize);
+  PrintVector (id);
+  /*
+   * Loop all the socket entries to check the unresponsed
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i = m_runtimeVariable.find (id);
+
+  std::vector<RuntimeVariableEntry> runtimeVector = i->second;
+
+  for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVector.begin (); j != runtimeVector.end (); )
+    {
+      NS_LOG_DEBUG ("The page " << (uint32_t)page << " The object " << (uint32_t)object << " The session " << (uint32_t)session);
+      if ((j->m_session == session) && (j->m_page == page) && (j->m_object == object) && (j->m_rspSize == totalSize))
+        {
+          NS_LOG_DEBUG ("The cumulative object size " << j->m_cumSize);
+          j->m_cumSize += packetSize;
+          j->m_delay += (Simulator::Now ().GetSeconds () - j->m_reqTime);
+
+          NS_LOG_DEBUG ("The cumulative object size " << j->m_cumSize << " and the rspsize " << j->m_rspSize);
+
+          if (j->m_cumSize >= j->m_rspSize)
+            {
+              NS_LOG_DEBUG ("Finished one object");
+              j->SetResponsed (true);
+              // Send the next in-line response if already processed by the http server
+              if (m_persistent)
+                {
+                  NS_LOG_DEBUG ("Send the next in line response");
+                  NextResponse (id);
+                }
+              else
+                {
+                  NextRequest (id);
+                }
+            }
+          break;
+        }
+      else
+        {
+          ++j;
+        }
+    }
+  /*
+   * Save the new route cache along with the destination address in map
+   */
+  m_runtimeVariable.erase (id);
+  std::pair<std::map<std::vector<Ipv4Address>, httpRuntime >::iterator, bool> result =
+    m_runtimeVariable.insert (std::make_pair (id, runtimeVector));
+
+  return result.second;
+}
+
+void
+RuntimeVariable::PrintVector (std::vector<Ipv4Address>& vec)
+{
+  /*
+   * Check elements in a route vector
+   */
+  if (!vec.size ())
+    {
+      NS_LOG_DEBUG ("The vector is empty");
+    }
+  else
+    {
+      NS_LOG_DEBUG ("Print all the elements in a vector");
+      for (std::vector<Ipv4Address>::const_iterator i = vec.begin (); i != vec.end (); ++i)
+        {
+          NS_LOG_DEBUG ("The ip address " << *i);
+        }
+    }
+}
+
+bool
+RuntimeVariable::LookupResponseEntry (std::vector<Ipv4Address> id, RuntimeVariableEntry &rt, uint16_t session, uint8_t page, uint8_t object)
+{
+  NS_LOG_FUNCTION (this << (uint32_t)session << (uint32_t)page << (uint32_t)object);
+  /*
+   * Loop all the socket entries to check the unresponsed
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  PrintVector (id);
+
+  std::vector<RuntimeVariableEntry> runtimeVariable = i->second;
+
+  NS_LOG_DEBUG ("got here with session " << session << " " << (uint32_t)page << " " << (uint32_t)object);
+  for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVariable.begin (); j
+       != runtimeVariable.end (); ++j)
+    {
+      NS_LOG_DEBUG ("session " << (uint32_t)j->m_session << " " << session << " " << (uint32_t)j->m_page << " " << (uint32_t)page << " " << " " << (uint32_t)j->m_object << " " << (uint32_t)object);
+      if ((j->m_session == session) && (j->m_page == page) && (j->m_object == object))
+        {
+          NS_LOG_DEBUG ("Got in here");
+          rt = *j;
+          return true;
+        }
+    }
+  return false;
+}
+
+void
+RuntimeVariable::ServerResponse (std::vector<Ipv4Address> id, Ptr<Socket> socket, uint32_t rspSize, uint16_t session, uint8_t page, uint8_t object)
+{
+  NS_LOG_FUNCTION (this << socket << (uint32_t)rspSize << (uint32_t)session << (uint32_t)page << (uint32_t)object);
+
+  PrintVector (id);
+  ServerResponseEntry sr;
+  sr.m_socket = socket;
+  sr.m_rspSize = rspSize;
+  sr.m_session = session;
+  sr.m_page = page;
+  sr.m_object = object;
+
+  if (m_persistent)
+    {
+      /*
+       * Loop all the socket entries to check the unresponsed
+       */
+      std::map<std::vector<Ipv4Address>, std::vector<ServerResponseEntry> >::const_iterator i =
+        m_serverResponse.find (id);
+
+      if (i == m_serverResponse.end ())
+        {
+          std::vector<ServerResponseEntry> serverResponse;
+          serverResponse.clear ();
+          serverResponse.push_back (sr);
+          // Send the HTTP response
+          SendResponse (sr);
+
+          m_serverResponse.erase (id);
+         /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ServerResponseEntry> >::iterator, bool> result =
+            m_serverResponse.insert (std::make_pair (id, serverResponse));*/
+        }
+      else
+        {
+          std::vector<ServerResponseEntry> serverResponse = i->second;
+          NS_LOG_DEBUG ("The vector size " << serverResponse.size ());
+          if (serverResponse.size ())
+            {
+              NS_LOG_INFO ("There are entries waiting for delivery notification");
+              // There is unfinished entries, so save the response entries in buffer
+              serverResponse.push_back (sr);
+              m_serverResponse.erase (id);
+             /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ServerResponseEntry> >::iterator, bool> result =
+                m_serverResponse.insert (std::make_pair (id, serverResponse));*/
+            }
+          else
+            {
+              // the server response entry is empty
+              std::vector<ServerResponseEntry> serverResponse;
+              serverResponse.clear ();
+              serverResponse.push_back (sr);
+              // Send the http response
+              NS_LOG_DEBUG ("The page " << (uint32_t)page << " the session " << (uint32_t)session << " the object " << (uint32_t)object);
+              SendResponse (sr);
+              m_serverResponse.erase (id);
+             /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ServerResponseEntry> >::iterator, bool> result =
+                m_serverResponse.insert (std::make_pair (id, serverResponse));*/
+            }
+        }
+    }
+  else
+    {
+      // not the persistent connection, send the response right away
+      SendResponse (sr);
+    }
+}
+
+void
+RuntimeVariable::ClientRequest (std::vector<Ipv4Address> id, Ptr<Socket> socket, uint32_t reqSize, uint16_t session, uint8_t page, uint8_t object)
+{
+  NS_LOG_FUNCTION (this << socket << (uint32_t)reqSize << (uint32_t)session << (uint32_t)page << (uint32_t)object);
+
+  PrintVector (id);
+  ClientRequestEntry cr;
+  cr.m_socket = socket;
+  cr.m_reqSize = reqSize;
+  cr.m_session = session;
+  cr.m_page = page;
+  cr.m_object = object;
+  NS_LOG_DEBUG ("The page " << (uint32_t)page << " the session " << (uint32_t)session << " the object " << (uint32_t)object << " the reqSize " << (uint32_t)reqSize);
+  /*
+   * Loop all the socket entries to check the unresponsed
+   */
+  std::map<std::vector<Ipv4Address>, std::vector<ClientRequestEntry> >::const_iterator i =
+    m_clientRequest.find (id);
+
+  if (i == m_clientRequest.end ())
+    {
+      // if there is no previous request entries, send this one out
+      SendRequest (cr);
+      std::vector<ClientRequestEntry> clientRequest;
+      clientRequest.push_back (cr);
+
+     /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ClientRequestEntry> >::iterator, bool> result =
+        m_clientRequest.insert (std::make_pair (id, clientRequest));*/
+    }
+  else
+    {
+      std::vector<ClientRequestEntry> clientRequest = i->second;
+      NS_LOG_DEBUG ("The vector size " << clientRequest.size ());
+
+      // There is unfinished entries, so save the response entries in buffer
+      clientRequest.push_back (cr);
+      m_clientRequest.erase (id);
+     /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ClientRequestEntry> >::iterator, bool> result =
+        m_clientRequest.insert (std::make_pair (id, clientRequest));*/
+    }
+}
+
+void
+RuntimeVariable::NextRequest (std::vector<Ipv4Address> id)
+{
+  NS_LOG_FUNCTION (this);
+  // remove the first response entry and send the next entry out
+  std::map<std::vector<Ipv4Address>, std::vector<ClientRequestEntry> >::const_iterator i =
+    m_clientRequest.find (id);
+
+  if (i == m_clientRequest.end ())
+    {
+      NS_LOG_DEBUG ("The request entry for the destination not exist");
+    }
+  else
+    {
+      std::vector<ClientRequestEntry> clientRequest = i->second;
+      NS_LOG_DEBUG ("The vector size " << clientRequest.size ());
+      clientRequest.erase (clientRequest.begin ());
+
+      if (clientRequest.size ())
+        {
+          // Send the first response entry in the buffer
+          SendRequest (clientRequest.front ());
+
+          m_clientRequest.erase (id);
+         /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ClientRequestEntry> >::iterator, bool> result =
+            m_clientRequest.insert (std::make_pair (id, clientRequest));*/
+        }
+      else
+        {
+          // if the response buffer is empty, erase the id
+          m_clientRequest.erase (id);
+        }
+    }
+}
+
+void
+RuntimeVariable::SendRequest (ClientRequestEntry & cr)
+{
+  NS_LOG_FUNCTION (this);
+  HttpSeqHeader httpSeq;
+  httpSeq.SetPage (cr.m_page);
+  httpSeq.SetObject (cr.m_object);
+  httpSeq.SetSession (cr.m_session);
+  httpSeq.SetLength (cr.m_reqSize);
+
+  Ptr<Packet> packet = Create<Packet> (cr.m_reqSize);
+  packet->AddHeader (httpSeq);
+  NS_LOG_DEBUG ("Send packet size is " << packet->GetSize ());
+  cr.m_socket->Send (packet);
+}
+
+void
+RuntimeVariable::NextResponse (std::vector<Ipv4Address> id)
+{
+  NS_LOG_FUNCTION (this);
+  // remove the first response entry and send the next entry out
+  std::map<std::vector<Ipv4Address>, std::vector<ServerResponseEntry> >::const_iterator i =
+    m_serverResponse.find (id);
+
+  if (i == m_serverResponse.end ())
+    {
+      NS_LOG_DEBUG ("The response entry for the destination not exist");
+    }
+  else
+    {
+      std::vector<ServerResponseEntry> serverResponse = i->second;
+      // Erase the first response entry from the buffer
+
+      if (serverResponse.size ())
+        {
+          serverResponse.erase (serverResponse.begin ());
+          if (serverResponse.size ())
+            {
+
+              // Send the first response entry in the buffer
+              SendResponse (serverResponse.front ());
+
+              m_serverResponse.erase (id);
+             /* std::pair<std::map<std::vector<Ipv4Address>, std::vector<ServerResponseEntry> >::iterator, bool> result =
+                m_serverResponse.insert (std::make_pair (id, serverResponse));*/
+            }
+          else
+            {
+              // if the response buffer is empty, erase the id
+              m_serverResponse.erase (id);
+            }
+        }
+      else
+        {
+          // if the response buffer is empty, erase the id
+          m_serverResponse.erase (id);
+        }
+    }
+}
+
+void
+RuntimeVariable::SendResponse (ServerResponseEntry & sr)
+{
+  NS_LOG_FUNCTION (this);
+  HttpSeqHeader httpSeq;
+  httpSeq.SetPage (sr.m_page);
+  httpSeq.SetObject (sr.m_object);
+  httpSeq.SetSession (sr.m_session);
+  httpSeq.SetLength (sr.m_rspSize);
+  NS_LOG_DEBUG ("The session " << (uint32_t)sr.m_session << " the object " << (uint32_t)sr.m_object << " the page " << (uint32_t)sr.m_page);
+
+  Ptr<Packet> packet = Create<Packet> (sr.m_rspSize);
+  packet->AddHeader (httpSeq);
+  sr.m_socket->Send (packet);
+}
+
+bool
+RuntimeVariable::AddEntry (std::vector<Ipv4Address> id, RuntimeVariableEntry & rt)
+{
+  NS_LOG_FUNCTION (this);
+  PrintVector (id);
+  // Add the runtime variable entry to the map with key as the node pair
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i = m_runtimeVariable.find (id);
+  if (i == m_runtimeVariable.end ())
+    {
+      httpRuntime runtimeVector;
+      runtimeVector.clear ();
+      runtimeVector.push_back (rt);
+
+      std::pair<std::map<std::vector<Ipv4Address>, httpRuntime >::iterator, bool> result =
+        m_runtimeVariable.insert (std::make_pair (id, runtimeVector));
+      return result.second;
+    }
+  /*
+   * We have a vector for the socket
+   */
+  httpRuntime runtimeVector = i->second;
+  runtimeVector.push_back (rt);
+  /*
+   * Save the new route cache along with the destination address in map
+   */
+  m_runtimeVariable.erase (id);
+  std::pair<std::map<std::vector<Ipv4Address>, httpRuntime >::iterator, bool> result =
+    m_runtimeVariable.insert (std::make_pair (id, runtimeVector));
+
+  return result.second;
+}
+
+double
+RuntimeVariable::isFinished (std::vector<Ipv4Address> id, uint8_t page, uint32_t objsPerPage)
+{
+  NS_LOG_FUNCTION (this << (uint32_t)page << (uint32_t)objsPerPage);
+  m_verifier = 0;
+  m_pageDelay[page] = 0;
+  /*
+   * Loop all the socket entries to check if the page is finished or not
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  if (i == m_runtimeVariable.end ())
+    {
+      NS_LOG_DEBUG ("Should not happen");
+    }
+  else
+    {
+      httpRuntime runtimeVariable = i->second;
+
+      for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVariable.begin (); j
+           != runtimeVariable.end (); ++j)
+        {
+          if (j->m_page == page)
+            {
+              NS_LOG_DEBUG ("The value of current time " << Simulator::Now ().GetSeconds () << " The value of past time " << j->m_reqTime);
+              if (((Simulator::Now ().GetSeconds () - j->m_reqTime) >= m_pageTimeout) && !(j->GetResponsed ()))
+                {
+                  NS_LOG_DEBUG ("The page time out value " << m_pageTimeout);
+                  m_pageDelay[page] = m_pageTimeout;
+                  j->SetResponsed (true);
+                  if (m_persistent)
+                    {
+                      NS_LOG_DEBUG ("Send the next in line response");
+                      NextResponse (id);
+                    }
+                  else
+                    {
+                      NextRequest (id);
+                    }
+                }
+              else if (j->GetResponsed ())
+                {
+                  m_verifier++;
+                  NS_LOG_INFO ("The delay of one object " << (Simulator::Now ().GetSeconds () - j->m_reqTime));
+                  m_pageDelay[page] += (Simulator::Now ().GetSeconds () - j->m_reqTime);
+                }
+            }
+        }
+    }
+
+  // if all the objects in one page is finished, record the delay
+  if (m_verifier >= objsPerPage)
+    {
+      NS_LOG_INFO ("The delay sent out " << m_pageDelay[page]);
+      return m_pageDelay[page];
+    }
+  else
+    {
+      return 0;
+    }
+}
+
+bool
+RuntimeVariable::isSessionFinished (std::vector<Ipv4Address> id)
+{
+  NS_LOG_FUNCTION (this);
+  m_verifier = 0;
+  /*
+   * Loop all the socket entries to check if the http session is finished
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  if (i == m_runtimeVariable.end ())
+    {
+      NS_LOG_DEBUG ("Should not happen");
+    }
+  else
+    {
+      httpRuntime runtimeVariable = i->second;
+
+      for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVariable.begin (); j
+           != runtimeVariable.end (); ++j)
+        {
+          if (j->GetResponsed ())
+            {
+              m_verifier++;
+            }
+        }
+      NS_LOG_INFO ("Verifier " << m_verifier << " the runtime variable size " << runtimeVariable.size ());
+      // if all the objects in one http session is finished, mark the session complete and get ready for next http session
+      if (m_verifier >= runtimeVariable.size ())
+        {
+          ClearPageDelay ();
+          return true;
+        }
+      else
+        {
+          return false;
+        }
+    }
+  return false;
+}
+
+void
+RuntimeVariable::ClearPageDelay ()
+{
+  NS_LOG_FUNCTION (this);
+  m_pageDelay.clear ();
+}
+
+void
+RuntimeVariable::ClearServerResponse ()
+{
+  NS_LOG_FUNCTION (this);
+  m_serverResponse.clear ();
+}
+
+uint32_t
+RuntimeVariable::RecordFailedDelay (std::vector<Ipv4Address> id)
+{
+  NS_LOG_FUNCTION (this);
+  m_delayVector.clear ();
+  /*
+   * Loop all the socket entries to check for failed http page
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  httpRuntime runtimeVariable = i->second;
+
+  for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVariable.begin (); j != runtimeVariable.end (); ++j)
+    {
+      if (!(j->GetResponsed ()))
+        {
+          // if not response, push the page number to the delay vector
+          m_delayVector.push_back (j->m_page);
+        }
+    }
+  // make the page number in the delay vector unique and return the unfinished page number to http client
+  m_delayVector.erase (std::unique (m_delayVector.begin (), m_delayVector.end ()), m_delayVector.end ());
+  NS_LOG_INFO ("Delay vector size " << m_delayVector.size ());
+
+  return m_delayVector.size ();
+}
+
+double
+RuntimeVariable::RecordOdr (std::vector<Ipv4Address> id)
+{
+  NS_LOG_FUNCTION (this);
+  double totalDelivered = 0;
+  double fullSize = 0;
+  /*
+   * Loop all the socket entries to record the object delivery ratio
+   */
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  httpRuntime runtimeVariable = i->second;
+
+  for (std::vector<RuntimeVariableEntry>::iterator j = runtimeVariable.begin (); j != runtimeVariable.end (); ++j)
+    {
+      totalDelivered += j->m_cumSize;
+      fullSize += j->m_rspSize;
+      NS_LOG_INFO ("Full size " << fullSize << " Total Delivered " << totalDelivered);
+    }
+  // if the total delivered is larger than full size, which should not happen, make it right
+  if (totalDelivered > fullSize)
+    {
+      totalDelivered = fullSize;
+    }
+  // The object delivery ratio will be the total delivered over the full size
+  return (totalDelivered / fullSize);
+}
+
+std::vector<RuntimeVariableEntry>
+RuntimeVariable::GetBuffer (std::vector<Ipv4Address> id)
+{
+  std::map<std::vector<Ipv4Address>, httpRuntime >::const_iterator i =
+    m_runtimeVariable.find (id);
+
+  return i->second;
+}
+
+bool
+RuntimeVariable::Clean (std::vector<Ipv4Address> id)
+{
+  NS_LOG_FUNCTION (this);
+  m_runtimeVariable.erase (id);
+  return true;
+}
+
+void
+RuntimeVariable::Print (std::ostream &os)
+{
+  os << "\tHttp RuntimeVariable\n"
+     << "Request size\tResponse size\tRequest gap\tServer delay\tTotal request\tLast request\n";
+  for (std::vector<RuntimeVariableEntry>::const_iterator i =
+         m_httpRuntime.begin (); i != m_httpRuntime.end (); ++i)
+    {
+//      i->Print (os);
+    }
+  os << "\n";
+}
+} //http namespace
+} //ns3 namespace

@@ -1,0 +1,72 @@
+Remote host Address  : 1.0.0.2
+client mac address22:33:44:55:66:70
+ UE Interface address7.0.0.2
+ Wifi Interface address7.0.0.2
+Flow 1 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   9015056
+  Rx Bytes:   8944784
+  Transmitted Packets: 15653
+  Received Packets: 15531
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9966620099.0ns
+  Throughput: 7.61081Mbps
+Flow 2 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   9002384
+  Rx Bytes:   8941904
+  Transmitted Packets: 15631
+  Received Packets: 15526
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999964349.0ns
+  Throughput: 7.58018Mbps
+Flow 3 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1219472
+  Rx Bytes:   1207952
+  Transmitted Packets: 2119
+  Received Packets: 2099
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9939930592.0ns
+  Throughput: 1.03087Mbps
+Flow 4 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1115792
+  Rx Bytes:   1110608
+  Transmitted Packets: 1939
+  Received Packets: 1930
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999929604.0ns
+  Throughput: 0.941481Mbps
+Flow 5 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   310640
+  Rx Bytes:   310640
+  Transmitted Packets: 7766
+  Received Packets: 7766
+  First Tx time:   +1000128101.0ns
+  Last Rx time:   +9971928638.0ns
+  Throughput: 0.26416Mbps
+Flow 6 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   310520
+  Rx Bytes:   310200
+  Transmitted Packets: 7763
+  Received Packets: 7755
+  First Tx time:   +1000350167.0ns
+  Last Rx time:   +9999929886.0ns
+  Throughput: 0.262972Mbps
+Flow 7 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   47280
+  Rx Bytes:   46880
+  Transmitted Packets: 1182
+  Received Packets: 1172
+  First Tx time:   +1011928638.0ns
+  Last Rx time:   +9932046047.0ns
+  Throughput: 0.0400966Mbps
+Flow 8 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   40360
+  Rx Bytes:   40040
+  Transmitted Packets: 1009
+  Received Packets: 1001
+  First Tx time:   +1011928703.0ns
+  Last Rx time:   +9992456567.0ns
+  Throughput: 0.0340159Mbps
+  Packet loss = 282
+Percentage of Lost packets = 0.531454
+  Delay = 0.0421628
+ Total Rx Bytes: 2.0913e+07 Total Throughput: 17.7646

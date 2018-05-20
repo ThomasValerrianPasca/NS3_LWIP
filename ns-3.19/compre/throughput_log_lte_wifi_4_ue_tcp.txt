@@ -1,0 +1,1 @@
+./log_lte_wifi_1_ue_tcp.log: Total Rx Bytes: 1.0254e+08 Total Throughput: 7.90577

@@ -1,0 +1,89 @@
+case1
+Flow 1 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   2094992
+  Rx Bytes:   2082320
+  Transmitted Packets: 3639
+  Received Packets: 3617
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9993929604.0ns
+  Throughput: 1.7664Mbps
+Flow 2 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   78560
+  Rx Bytes:   78240
+  Transmitted Packets: 1964
+  Received Packets: 1956
+  First Tx time:   +1021928638.0ns
+  Last Rx time:   +9971961211.0ns
+  Throughput: 0.0666952Mbps
+  Packet loss = 30
+Percentage of Lost packets = 0.535427
+  Delay = 0.0177408
+ Total Rx Bytes: 2.16056e+06 Total Throughput: 1.83309
+
+
+case2
+Flow 1 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   1919312
+  Rx Bytes:   1897424
+  Transmitted Packets: 3334
+  Received Packets: 3296
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9983929110.0ns
+  Throughput: 1.61134Mbps
+Flow 2 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   71800
+  Rx Bytes:   71800
+  Transmitted Packets: 1795
+  Received Packets: 1795
+  First Tx time:   +1021928638.0ns
+  Last Rx time:   +9996999999.0ns
+  Throughput: 0.0610347Mbps
+  Packet loss = 38
+Percentage of Lost packets = 0.740885
+  Delay = 0.0188179
+ Total Rx Bytes: 1.96922e+06 Total Throughput: 1.67238
+
+case3
+Flow 1 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   3809744
+  Rx Bytes:   3781520
+  Transmitted Packets: 6616
+  Received Packets: 6567
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999999999.0ns
+  Throughput: 3.20563Mbps
+Flow 2 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   139480
+  Rx Bytes:   139160
+  Transmitted Packets: 3487
+  Received Packets: 3479
+  First Tx time:   +1013999999.0ns
+  Last Rx time:   +9998928638.0ns
+  Throughput: 0.118165Mbps
+  Packet loss = 57
+Percentage of Lost packets = 0.564189
+  Delay = 0.0199731
+ Total Rx Bytes: 3.92068e+06 Total Throughput: 3.3238
+
+case4
+Flow 1 (1.0.0.2 -> 7.0.0.2)
+  Tx Bytes:   18176912
+  Rx Bytes:   18137744
+  Transmitted Packets: 31559
+  Received Packets: 31491
+  First Tx time:   +1000000000.0ns
+  Last Rx time:   +9999815595.0ns
+  Throughput: 15.3759Mbps
+Flow 2 (7.0.0.2 -> 1.0.0.2)
+  Tx Bytes:   629840
+  Rx Bytes:   628760
+  Transmitted Packets: 15746
+  Received Packets: 15719
+  First Tx time:   +1010128101.0ns
+  Last Rx time:   +9999928703.0ns
+  Throughput: 0.533611Mbps
+  Packet loss = 95
+Percentage of Lost packets = 0.200824
+  Delay = 0.0171439
+ Total Rx Bytes: 1.87665e+07 Total Throughput: 15.9095
+
