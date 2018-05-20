@@ -68,7 +68,7 @@ main (int argc, char *argv[])
 	/*		Mode 	LTE UL 		LTE DL 		Wi-Fi UL		Wi-Fi DL		Split 
 	 * 		1		True		True		False			False			Flow
 	 * 		2		False		False		True			True			Flow
-	 * 		3		True		True		True			False			Packet
+	 * 		3		True		True		False			True			Packet
 	 * 		4		True		True		True			True			Flow
 	 * /
 	
