@@ -64,8 +64,8 @@ NS_LOG_COMPONENT_DEFINE ("EpcFirstExample");
 int
 main (int argc, char *argv[])
 {
-	int aggregation_mode=2;
-	/*		Mode 	LTE UL 		LTE DL 		Wi-Fi UL		Wi-Fi DL		Split 
+	int aggregation_mode=1;
+	/*		Mode 	LTE UL 		LTE DL 		Wi-Fi UL		Wi-Fi DL		Split
 	 * 		1		True		True		False			False			Flow
 	 * 		2		False		False		True			True			Flow
 	 * 		3		True		True		False			True			Packet
@@ -74,14 +74,10 @@ main (int argc, char *argv[])
 	uint16_t numberOfNodes = 1;
 	uint16_t numberOfClients=1;//Users
 	double simTime = 10;
-	double distance = 5;
+	double distance = 10;
 	long xvalue=0;
 	long yvalue=0;
-	double interPacketInterval =128;
-	//128==64 mbps
-	//256==32 mbps
-	//512==16 mbps
-	//1024==8 mbps
+	double interPacketInterval =8192;//1024==8 mbps
 	//2048 = 4 Mbps
 	//4096 = 2 Mbps
 	//8192==1 mbps
@@ -185,15 +181,10 @@ main (int argc, char *argv[])
 	phy.SetChannel (channel.Create ());
 
 	WifiHelper wifi = WifiHelper::Default ();
-	//wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
-	//wifi.SetStandard(WIFI_PHY_STANDARD_80211b);
-	 wifi.SetStandard (WIFI_PHY_STANDARD_80211n_5GHZ);
-	  wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("OfdmRate72_2MbpsBW20MHz"), "ControlMode", StringValue ("OfdmRate6Mbps"));
-	  
-	//NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
- HtWifiMacHelper mac = HtWifiMacHelper::Default ();
- mac.SetBlockAckThresholdForAc (AC_BE, 2);
- mac.SetMpduAggregatorForAc (AC_BE,"ns3::MpduStandardAggregator", "MaxAmpduSize", UintegerValue (10000));
+	wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
+	wifi.SetStandard(WIFI_PHY_STANDARD_80211b);
+	NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
+
 	Ssid ssid = Ssid ("Integrated_Box");
 	mac.SetType ("ns3::StaWifiMac",
 			"Ssid", SsidValue (ssid),
@@ -349,7 +340,7 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
 	// Install and start applications on UEs and remote host
 	//TCP Application============================
 	//uint16_t port=2000;
-		//uint16_t port1=1001;
+		uint16_t port1=1001;
 		for (uint32_t u = 0; u < numberOfClients; ++u)
 	{
 			/*	 	 BulkSendHelper source ("ns3::TcpSocketFactory",InetSocketAddress (remoteHostAddr, port));
@@ -382,7 +373,7 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
    	   port++;
 
 */
-	/*	BulkSendHelper source2 ("ns3::TcpSocketFactory",InetSocketAddress (ueIpIface.GetAddress (u), port1));
+		BulkSendHelper source2 ("ns3::TcpSocketFactory",InetSocketAddress (ueIpIface.GetAddress (u), port1));
 		// Set the amount of data to send in bytes.  Zero is unlimited.
 		source2.SetAttribute ("MaxBytes", UintegerValue (0));
 		source2.SetAttribute("SendSize",UintegerValue (1024));
@@ -395,7 +386,6 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
 		sinkApps2.Stop (Seconds (10.0));
 		std::cout<<"Downlink UE = "<<u<<" Source Port "<<port1<<std::endl;
 		port1++;
-		*/
 
 /*
 		    BulkSendHelper source3 ("ns3::TcpSocketFactory",InetSocketAddress (ueIpIface.GetAddress (u), port1));
@@ -420,21 +410,19 @@ for (uint32_t i=0;i<integrated_ue.Get(0)->GetNDevices();i++){
 		uint16_t port=1005;
 	for (uint32_t u = 0; u < numberOfClients; ++u)
 	{
-
-		UdpClientHelper source (ueIpIface.GetAddress (u), port);
+		UdpClientHelper source (remoteHostAddr, port);
 		// Set the amount of data to send in bytes.  Zero is unlimited.
 		source.SetAttribute ("Interval", TimeValue (MicroSeconds(interPacketInterval)));
 		source.SetAttribute ("MaxPackets", UintegerValue(1000000));
 		source.SetAttribute ("PacketSize", UintegerValue(1024));
-		ApplicationContainer sourceApps = source.Install (remoteHost);
+		ApplicationContainer sourceApps = source.Install (integrated_ue.Get(u));
 		sourceApps.Start (Seconds (1.0));
 		sourceApps.Stop (Seconds (10.0));
 		PacketSinkHelper sink ("ns3::UdpSocketFactory",InetSocketAddress (Ipv4Address::GetAny (), port));
-		ApplicationContainer sinkApps = sink.Install (integrated_ue.Get(u));
+		ApplicationContainer sinkApps = sink.Install (remoteHost);
 		sinkApps.Start (Seconds (1.0));
 		sinkApps.Stop (Seconds (10.0));
 		port++;
-
 /*
 			UdpClientHelper source01 (remoteHostAddr, port);
 		// Set the amount of data to send in bytes.  Zero is unlimited.

@@ -45,7 +45,7 @@ NS_LOG_COMPONENT_DEFINE ("EpcEnbApplication")
 //uint32_t pkt_cnt=0;
 uint32_t packtno=0;
 uint16_t temp_port=0;
-uint32_t EpcEnbApplication::mode=1;
+uint32_t EpcEnbApplication::mode=0;
 uint32_t current_value=0,past_value=0;
 uint64_t past=0;
 //THomas -- User defined class for collecting stats for TCP Window
@@ -443,7 +443,10 @@ EpcEnbApplication::SendToLteSocket (Ptr<Packet> packet, uint16_t rnti, uint8_t b
 		for(i=0;i<8;i++) {
 			//std::cout << s[i].source_port <<","<<s[i].dest_port <<","<<s[i].last_seqno-s[i].window_size << std::endl;
 		}
-		if(ack.GetValue()!=1) {
+		if (mode==2){
+		router.senddownlink(packet,2048);
+	}
+		else if(ack.GetValue()!=1) {
 					//	std::cout<<"Down link through lte"<<std::endl;
 						m_lteSocket->Send (packet);
 					} else {
